@@ -1,12 +1,12 @@
 import jwt from "jsonwebtoken";
-module.exports = async function (req, res, next) {
-  if (req.url === "/users/create") {
+export default async function (req, res, next) {
+  if (req.url === "/user/registr" || req.url === "/user/login") {
     return next();
   }
   try {
     const { token } = req.headers;
     const tokens = await jwt.verify(token, process.env.SECRET_KEY);
-    req.user_id = tokens.id;
+    req.id = tokens.id;
     next();
   } catch (error) {
     res.status(401).send({
@@ -14,3 +14,4 @@ module.exports = async function (req, res, next) {
     });
   }
 };
+

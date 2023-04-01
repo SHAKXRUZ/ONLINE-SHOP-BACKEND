@@ -3,66 +3,80 @@ import pool from "../config/db_config.js";
 // GET USERS
 const getUsers = async (req, res) => {
   try {
-    let user_list = await pool.query(`select * from users`);
-    res.send(user_list.rows);
+    let userList = await pool.query("select * from users");
+    res.status(201).send(userList.rows);
   } catch {
     res.send({ msg: "Error" });
   }
 };
 
-// CREATE USER
-const createUser = async (req, res) => {
-  const { name, age, email_id, password, role, company_id } = req.body;
-  let foundedUser = await pool.query(
-    "select * from users where email_id = $1",
-    [email_id]
-  );
-  if (!foundedUser.rows[0]) {
-    await pool.query(
-      `INSERT INTO users(name, age, email_id, password, role, company_id) VALUES($1,$2,$3,$4,$5,$6)`,
-      [name, age, email_id, password, role, company_id]
-    );
-    return res.send({ mag: "Created users!" });
-  }
-  res.send({ msg: "This user exists!" });
-};
-
-// UPDATE USER
+// // UPDATE USER
 const updateUser = async (req, res) => {
-  let { id, name, age, email_id, password, role, company_id } = req.body;
+  let { id, name, email, password, age, role } = req.body;
+
   let getOne = await pool.query("select * from users where id = $1", [id]);
-  if (!getOne.rows[0]) return res.send({ msg: "User not found!" });
+
+  let userEmailId = getOne.rows[0].email_id;
+
+  let userEmail = await pool.query("select * from emails where id = $1", [
+    userEmailId,
+  ]);
+
+  if (!getOne.rows[0]) return res.status(404).send({ msg: "User not found!" });
+
   name = name ? name : getOne.rows[0].name;
-  age = age ? age : getOne.rows[0].age;
-  email_id = email_id ? email_id : getOne.rows[0].email_id;
   password = password ? password : getOne.rows[0].password;
+  age = age ? age : getOne.rows[0].age;
+  email = email ? email : userEmail.rows[0].title;
   role = role ? role : getOne.rows[0].role;
-  company_id = company_id ? company_id : getOne.rows[0].company_id;
+
   await pool.query(
-    `update users set name = $1, age = $2, email_id = $3, password = $4, role = $5, company_id = $6 where id = $7`,
-    [name, age, email_id, password, role, company_id, id]
+    `update users set name = $1, password = $2, age = $3, role = $4 where id = $5
+    `,
+    [name, password, age, role, id]
   );
-  res.send({ msg: "Updated user!" });
+
+  await pool.query(
+    `update emails set title = $1 where id = $2
+    `,
+    [email, userEmailId]
+  );
+
+  res.status(201).send({ msg: "Updated user!" });
 };
 
-// DELETE USER
+// // DELETE USER
 const deleteUser = async (req, res) => {
-  const { id } = req.body;
-  let getOne = await pool.query("select * from users where id = $1", [id]);
-  if (!getOne.rows[0]) return res.send({ msg: "User not found!" });
-  let deletedUser = await pool.query(`delete from users where id = $1`, [id]);
-  res.send({ msg: "Deleted user!" });
+  const { id } = req.params;
+
+  let getUser = await pool.query("select * from users where id = $1", [id]);
+
+  if (!getUser.rows[0]) return res.status(404).send({ msg: "User not found!" });
+
+  let userEmailId = getUser.rows[0].email_id;
+
+  await pool.query(`delete from users where id = $1`, [id]);
+
+  let userEmail = await pool.query(`select * from emails where id = $1`, [
+    userEmailId,
+  ]);
+
+  let emailId = userEmail.rows[0].id;
+
+  await pool.query(`delete from emails where id = $1`, [emailId]);
+
+  res.status(201).send({ msg: "Deleted user!" });
 };
 
-//GET USER
+// //GET USER
 const getUser = async (req, res) => {
-  const { id } = req.body;
+  const { id } = req.params;
 
   let getOne = await pool.query("select * from users where id = $1", [id]);
 
-  if (!getOne.rows[0]) return res.send({ msg: "User not found!" });
+  if (!getOne.rows[0]) return res.status(404).send({ msg: "User not found!" });
 
-  res.send(getOne.rows);
+  res.status(201).send(getOne.rows);
 };
 
-export { getUsers, createUser, updateUser, deleteUser, getUser };
+export { getUsers, updateUser, deleteUser, getUser };

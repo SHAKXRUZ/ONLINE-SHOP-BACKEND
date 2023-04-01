@@ -22,7 +22,7 @@ CREATE TABLE company (
     title VARCHAR(50) NOT NULL,
     email_id VARCHAR(50) NOT NULL,
     address VARCHAR(50) NOT NULL,
-    created_by VARCHAR(50)
+    created_by TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE cars (
@@ -31,7 +31,7 @@ CREATE TABLE cars (
     car_price VARCHAR(50) NOT NULL,
     car_color VARCHAR(50) NOT NULL,
     car_brand VARCHAR(50) NOT NULL,
-    created_by VARCHAR(50) NOT NULL,
+    created_by TIMESTAMP NOT NULL DEFAULT NOW(),
     company_id VARCHAR(50) NOT NULL
 );
 
@@ -100,7 +100,6 @@ ALTER TABLE
 ADD
     CONSTRAINT fk_company_id FOREIGN KEY(company_id) REFERENCES company(id);
 
-
 -- emails values
 INSERT INTO
     emails(title)
@@ -112,11 +111,11 @@ INSERT INTO
     users(name, age, email_id, password, role)
 VALUES
     (
-        'shakhruzbek',
+        'Shakhruz',
         19,
-        '730a9bbc-f2a3-4611-9b25-ab93a22bd5c8',
+        '9bbf9401-c3e0-4b61-bc85-d9e817178486',
         '20030625',
-        'user'
+        'admin'
     );
 
 -- company values
